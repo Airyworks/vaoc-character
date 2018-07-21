@@ -1,7 +1,10 @@
 from flask import Flask, request
 import loader
+import random
+import base64
 
-
+mapping = {}
+pool = [i + 1 for i in range(10)]
 app = Flask(__name__)
 
 @app.route('/api/v1/')
@@ -14,7 +17,8 @@ def gen():
     str_hash = post_data['hash']
     tensor = loader.get_pic(str_hash)
     pred_img, prediction = loader.predict(tensor)
-    return
+    byte_img = pred_img.tobytes()
+    return base64.b64encode(byte_img).decode('utf-8')
 
 @app.route('/api/v1/model')
 def mod():
@@ -22,8 +26,19 @@ def mod():
 
 @app.route('/api/v1/fakegen', methods=['POST'])
 def fgen():
-    with open('./release/1.png', 'rb') as f_obj:
+    post_data = request.json
+    str_hash = post_data['hash']
+    if str_hash in mapping.keys():
+        name = str(mapping[str_hash])
+    else:
+        name = random.choice(pool)
+        pool.remove(name)
+    path = f'./release/{name}.png'
+    with open(path, 'rb') as f_obj:
         b = f_obj.read()
-    import base64
+
     c = base64.b64encode(b)
     return c.decode('utf-8')
+
+if __name__ == '__main__':
+    app.run('0.0.0.0')
