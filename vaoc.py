@@ -31,6 +31,8 @@ def fgen():
     if str_hash in mapping.keys():
         name = str(mapping[str_hash])
     else:
+        if len(pool) == 0:
+            pool = [i + 1 for i in range(10)]
         name = random.choice(pool)
         pool.remove(name)
     path = f'./release/{name}.png'
