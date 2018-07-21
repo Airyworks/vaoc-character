@@ -43,21 +43,23 @@ def get_pic(hash_str:str):
         proto = zip(l, r)
         flow_1 = lambda x: math.sqrt(-2 * math.log(x))
         flow_2 = lambda x: math.cos(2 * math.pi * x)
-        norm = map(lambda x, y: flow_1(x) * flow_2(y), proto)
+        norm = map(lambda x: flow_1(x[0]) * flow_2(x[1]), proto)
         return norm
     normalize = normal(makearr(l_seed), makearr(r_seed))
     norm_tensor = torch.from_numpy(numpy.fromiter(normalize, dtype=numpy.float))
-    return norm_tensor
+    return norm_tensor.view(1, -1, 1, 1)
 
 
-def predict(input_tensor):
+def predict(input_tensor, cuda=True):
     z2 = torch.FloatTensor(1, 100, 1, 1).normal_(0, 1)
+    if cuda:
+        z2 = z2.cuda()
     zd = (z2 - input_tensor) / 15
     pre = torch.FloatTensor(16, 100, 1, 1)
     for i in range(16):
         pre[i] = input_tensor + i * zd
     pre = Variable(pre)
-    res = netG(pre)
+    res, _ = netG(pre)
     return convert_img(res.data, 16), res.data
 
 

@@ -19,3 +19,11 @@ def gen():
 @app.route('/api/v1/model')
 def mod():
     return str(loader.netG)
+
+@app.route('/api/v1/fakegen', methods=['POST'])
+def fgen():
+    with open('./release/1.png', 'rb') as f_obj:
+        b = f_obj.read()
+    import base64
+    c = base64.b64encode(b)
+    return c.decode('utf-8')
